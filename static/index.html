@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MCP Agent Coordinator - Dashboard</title>
+    <link rel="stylesheet" href="/static/css/dashboard.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <div class="app">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <div class="header-left">
+                    <h1 class="app-title">
+                        MCP Agent Coordinator
+                    </h1>
+                    <div class="connection-status">
+                        <div class="status-indicator" id="connectionStatus">
+                            <div class="status-dot"></div>
+                            <span class="status-text">Connecting...</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="header-right">
+                    <div class="stats-summary" id="globalStats">
+                        <div class="stat-item">
+                            <span class="stat-value" id="totalProjects">0</span>
+                            <span class="stat-label">Projects</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-value" id="activeTodos">0</span>
+                            <span class="stat-label">Active Todos</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-value" id="activeAgents">0</span>
+                            <span class="stat-label">Active Agents</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Dashboard View -->
+            <div class="view" id="dashboardView">
+                <div class="view-header">
+                    <h2>Projects Dashboard</h2>
+                    <button class="btn btn-primary" id="refreshBtn">
+                        Refresh
+                    </button>
+                </div>
+
+                <div class="projects-grid" id="projectsGrid">
+                    <!-- Project cards will be inserted here -->
+                </div>
+
+                <div class="empty-state" id="emptyState" style="display: none;">
+                    <div class="empty-icon">📋</div>
+                    <h3>No Projects Yet</h3>
+                    <p>Projects will appear here as agents create them.</p>
+                </div>
+            </div>
+
+            <!-- Project Detail View -->
+            <div class="view" id="projectView" style="display: none;">
+                <div class="view-header">
+                    <button class="btn btn-secondary" id="backBtn">
+                        <span class="btn-icon">←</span>
+                        Back to Dashboard
+                    </button>
+                    <h2 id="projectTitle">Project Name</h2>
+                    <div class="view-tabs">
+                        <button class="tab-btn active" id="kanbanTab" data-view="kanban">
+                            📋 Kanban
+                        </button>
+                        <button class="tab-btn" id="auditTab" data-view="audit">
+                            📜 Audit Trail
+                        </button>
+                    </div>
+                    <div class="project-stats" id="projectStats">
+                        <div class="stat-badge">
+                            <span class="stat-value" id="projectCompletion">0%</span>
+                            <span class="stat-label">Complete</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="project-info" id="projectInfo">
+                    <p class="project-description" id="projectDescription"></p>
+                </div>
+
+                <!-- Kanban View -->
+                <div class="project-content-view" id="kanbanView">
+                    <div class="kanban-board" id="kanbanBoard">
+                        <!-- Task columns will be inserted here -->
+                    </div>
+                </div>
+
+                <!-- Audit Trail View -->
+                <div class="project-content-view" id="auditTrailView" style="display: none;">
+                    <div class="audit-controls">
+                        <div class="filter-group">
+                            <label for="eventTypeFilter">Event Type:</label>
+                            <select id="eventTypeFilter" class="filter-select">
+                                <option value="">All Events</option>
+                                <option value="project_created">Project Created</option>
+                                <option value="task_created">Task Created</option>
+                                <option value="todo_created">Todo Created</option>
+                                <option value="status_change">Status Change</option>
+                                <option value="file_lock">File Lock</option>
+                                <option value="assignment">Assignment</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label for="agentFilter">Agent:</label>
+                            <select id="agentFilter" class="filter-select">
+                                <option value="">All Agents</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label for="searchFilter">Search:</label>
+                            <input type="text" id="searchFilter" class="filter-input" placeholder="Search events...">
+                        </div>
+                        <div class="filter-group">
+                            <button class="btn btn-secondary" id="clearFilters">Clear Filters</button>
+                        </div>
+                    </div>
+
+                    <div class="audit-timeline" id="auditTimeline">
+                        <!-- Audit events will be inserted here -->
+                    </div>
+
+                    <div class="audit-empty-state" id="auditEmptyState" style="display: none;">
+                        <div class="empty-icon">📜</div>
+                        <h3>No Audit Events</h3>
+                        <p>Audit events will appear here as actions are performed on this project.</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Todo Detail Modal -->
+    <div class="modal-overlay" id="todoModal" style="display: none;">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 id="todoModalTitle">Todo Details</h3>
+                <button class="modal-close" id="todoModalClose">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="todo-details">
+                    <div class="detail-section">
+                        <h4>Description</h4>
+                        <p id="todoModalDescription"></p>
+                    </div>
+
+                    <div class="detail-section">
+                        <h4>Status</h4>
+                        <div class="status-badge" id="todoModalStatus"></div>
+                    </div>
+
+                    <div class="detail-section" id="todoModalFilesSection">
+                        <h4>Files</h4>
+                        <ul class="files-list" id="todoModalFiles"></ul>
+                    </div>
+
+                    <div class="detail-section" id="todoModalDependenciesSection">
+                        <h4>Dependencies</h4>
+                        <ul class="dependencies-list" id="todoModalDependencies"></ul>
+                    </div>
+
+                    <div class="detail-section" id="todoModalAgentSection">
+                        <h4>Assigned Agent</h4>
+                        <p id="todoModalAgent"></p>
+                    </div>
+
+                    <div class="detail-section">
+                        <h4>Timestamps</h4>
+                        <div class="timestamps">
+                            <div class="timestamp">
+                                <span class="label">Created:</span>
+                                <span id="todoModalCreated"></span>
+                            </div>
+                            <div class="timestamp">
+                                <span class="label">Updated:</span>
+                                <span id="todoModalUpdated"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/js/dashboard.js"></script>
+</body>
+
+</html>
