@@ -1,0 +1,27 @@
+Ok, we are building an MCP server which can help coordinate multiple parallel external agents within a singular IDE. 
+
+The logic for which is the following:
+Any given agent should only coordinate with other agents within the same project. projects are defined by their names, which must be unique. Any work that an agent does must be within a project. If an agent begins work, and there is no existing project that matches the current project name, a new project will be created. it does require a name and description. projects will generally remain indefinitely in progress status, though we will expose methods to allow this to be changed in theory.
+
+Once a project exists, tasks can be created within it. tasks are essentially groups of todo items which can be seen as sprints in a development cycle. Each of these sprints has a certain list of items to work on. If no initial tasks exist when an agent begins working, it must create a new task to assign todo cards to. the description for this task will be the overarching goal of that task and all subsequent todo items within it. tasks and todo items should have orders which they must be completed (we will need to add to our models and subsequently db.sqlite file.
+
+Todo items and tasks also need dependencies, which are todo or task (respectively) items which MUST be completed before the next can begin. 
+
+Each todo item will generally be handled by a separate agent. Todo items can be created initially and worked through step-by-step, and also can be added on the fly. After adding orders to our todo items, we need to be able to insert new todo items (and tasks) into a specific order after any currently in progress items and reorder them as necessary. 
+
+Files are used to store relative file dirs that are currently being worked on for a particular todo item. This is due to the fact that agents generally should not be editing files at the same time. These may be added mid item while in progress when a new, unexpected file is being modified. In general, before modifying any file the agent should check to see if that file has been added to any of the file lists for a list of todos within that current task. If files are not locked, they may be modified, but with care. If files are locked, they should not be modified. However, locked files should be set to unlocked after todo item completion.
+
+A general workflow from absolute scratch would look something like this:
+
+Agent is assigned some instruction. Agent reaches out to the instructions mcp function, learns how to use this system. Agent queries the existing project (which is the name of the current project root dir). Project does not exist, so agent creates new project. Agent then creates a task within this project, outlining the goals and a set of todo items, in order, which contain a list of files that will be touched for each. Once complete, agent begins work on first item.
+
+let's then say another agent, we will call this Agent 2, is queried to get started on the current task, it should read the instructions, as the above did, check if there is a current project, again, and if so, learn about the current open task, then utilize a get next todo item function which will get the next item that does not depend on aother's completion that has not already been completed (ie, if one has been completed, it can then move onto one that depended on it, otherwise get a separate one.). The process continues from here.
+
+notes:
+remember, you are defining a server and methodology for managing solely our own coordination and management system, not the agents themselves. The agents operate fully externally from this project and must be presented with the instructions for how to do so via the appropriate MCP function manifests, etc. You will need to do your research.
+
+agents should always be ultimately transparent with their work, marking items as in-progress, complete, etc. so that other agents can be kept up to date with tasks.
+
+We are building this primarily as a management for asynchronous tasks across multiple agents, and as such, this must provide all logic for coordinated multi-agent workflows. Think about this, and the subsequent consequences, when building components of this project. 
+
+We will need to manifest a function which presents all of the usage rules that are relevant to an agent's workflow in a an orderly and packaged way so it can start from there, learn all the instructions, and proceed on any new project, task, etc. Instructions should be clear how the system works, what is expected of agent, and that todo items should be planned out with files segmented into separate todo items (ie, do not create a ton of todo items referrencing the same file).
